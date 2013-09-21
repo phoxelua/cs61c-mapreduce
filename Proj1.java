@@ -55,7 +55,6 @@ public class Proj1{
                     /* Do nothing. */
                 }
             }
-
         @Override
             public void map(WritableComparable docID, Text docContents, Context context)
             throws IOException, InterruptedException {
@@ -77,7 +76,7 @@ public class Proj1{
                     allWords.add(word);                   
                     i++;
                 }
-		System.out.println("TARGETWORD SIZE: "); 
+		System.out.println("TARGET SIZE: "); 
 		System.out.print(targetWords.size());
 
                 //Initialize wordDistances
@@ -100,24 +99,35 @@ public class Proj1{
                     }
                 }
 
-                //Emit word-DoublePair pairs, DoublePair(Sw, Aw)
-                for (int m=0; m<wordDistances.size(); m++){
-                    // String temp = allWords.get(m);
-                    // if (!temp.equals(targetGram)){
-
-                    // }
-                    Text word = new Text(allWords.get(m));
+                //Emit word-DoublePair pairs, either  DoublePair(Sw, Aw) or DoublePair(Cw, Aw)
+                for (int m=0; m<allWords.size(); m++){
+                    //Text word = new Text(allWords.get(m));
 			//System.out.print(allWords.get(m));
 			//System.out.print(" ");
 			//System.out.print(targetWords.size()); 
 			//System.out.print(" ");
 			//System.out.print(func.f(wordDistances.get(m)));
 			//System.out.println(" ");
-			if (targetWords.size() == 0){
-				context.write(word, new DoublePair(func.f(Double.POSITIVE_INFINITY), func.f(wordDistances.get(m))));
+			if (funcNum == 0){
+				System.out.println("FUNCNUM IS ZEROOOOOO");
+				if (targetWords.size() == 0){
+					context.write(new Text(allWords.get(m)), new DoublePair(func.f(Double.POSITIVE_INFINITY), 1.0)); //emit 0,1
+				}
+				else{
+	   				context.write(new Text(allWords.get(m)), new DoublePair(func.f(targetWords.size()), 1.0)); //emit 1,1
+				}
 			}
-			else{
-	   			context.write(word, new DoublePair(func.f(targetWords.size()), func.f(wordDistances.get(m))));
+			else {
+				if (targetWords.size() == 0){
+					System.out.println("TARGET WORDS SIZE IS ZEERRROOOOOOOOO");
+					context.write(new Text(allWords.get(m)), new DoublePair(func.f(Double.POSITIVE_INFINITY), 1.0));
+				
+				}
+				else{
+					if (!targetGram.equals(allWords.get(m))){
+						context.write(new Text(allWords.get(m)), new DoublePair(func.f(wordDistances.get(m)), 1.0));	
+					}
+				}
 			}
                 }
 
@@ -194,7 +204,6 @@ public class Proj1{
                 double sw = 0.0;
                 double aw = 0.0; 
                 for (DoublePair value : values){
-			System.out.println(value.getDouble1());
                     sw += value.getDouble1();
                     aw += value.getDouble2();
                 }
@@ -203,9 +212,9 @@ public class Proj1{
                 if (sw > 0){
                     coRate = (sw * Math.pow(Math.log(sw), 3) / aw) * -1.0;
                 }
-		  System.out.println("REDUCWERRERERER 1");
-		  System.out.println(coRate);
-		  System.out.print(key);	
+		  //System.out.println("REDUCWERRERERER 1");
+		  //System.out.println(coRate);
+		  //System.out.print(key);	
                 context.write(new DoubleWritable(coRate), key);
 
             }
@@ -218,7 +227,7 @@ public class Proj1{
     public static class Reduce2 extends Reducer<DoubleWritable, Text, DoubleWritable, Text> {
 
         int n = 0;
-        static int N_TO_OUTPUT = 2000;
+        static int N_TO_OUTPUT = 100;
 
         /*
          * Setup gets called exactly once for each reducer, before reduce() gets called the first time.
