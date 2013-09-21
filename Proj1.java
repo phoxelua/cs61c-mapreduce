@@ -58,6 +58,7 @@ public class Proj1{
         @Override
             public void map(WritableComparable docID, Text docContents, Context context)
             throws IOException, InterruptedException {
+                System.out.println("WWWWWHEREHEREHREHRERERERERERRERERERERERE");
                 Matcher matcher = WORD_PATTERN.matcher(docContents.toString());
                 Func func = funcFromNum(funcNum);
 
@@ -75,28 +76,31 @@ public class Proj1{
                     allWords.add(word);                   
                     i++;
                 }
-
+                System.out.println("HEREHEREHREHRERERERERERRERERERERERE");
                 //Initialize wordDistances
                 for (int f=0; f<allWords.size(); f++){
-                    wordDistances.add(Double.POSITIVE_INFINITY);
+                    wordDistances.add((int)Double.POSITIVE_INFINITY);
                 }                
 
                 //Populate wordIndicies with each word's respective distance relative to target word indices
                 for (int j=0; j<targetWords.size(); j++){
                     for(int k=0; k<allWords.size(); k++){
                         int distance  = Math.abs(targetWords.get(j) - k);
-                        wordDisances.set(j, min(distance, wordDistances.get(j))); //FIX FOR ABSTRACTION
+                        wordDistances.set(j, Math.min(distance, wordDistances.get(j))); //FIX FOR ABSTRACTION
                     }
                 }
 
                 //Emit word-DoublePair pairs, DoublePair(Aw, Sw)
-                for (int m=0; m<wordDistance.size(); m++){
+                for (int m=0; m<wordDistances.size(); m++){
                     // String temp = allWords.get(m);
                     // if (!temp.equals(targetGram)){
 
                     // }
                     Text word = new Text(allWords.get(m));
-                    context.write(new DoublePair(targetWords.size(), Func.f(wordDistances.get(m))), word);
+                    System.out.println(targetWords.size()); 
+                    System.out.print(func.f(wordDistances.get(m)));
+                    System.out.print(allWords.get(m));
+		            context.write(new DoublePair(targetWords.size(), func.f(wordDistances.get(m))), word);
                 }
 
                 //Split all words into fragments based on the midpoints between target words
@@ -123,6 +127,7 @@ public class Proj1{
                 case 0:	
                     func = new Func() {
                         public double f(double d) {
+                            System.out.println("HHHHHHHHHHHHHHHHHHHHHHH");
                             return d == Double.POSITIVE_INFINITY ? 0.0 : 1.0;
                         }			
                     };	
@@ -149,14 +154,14 @@ public class Proj1{
     /** Here's where you'll be implementing your combiner. It must be non-trivial for you to receive credit. */
     public static class Combine1 extends Reducer<DoublePair, Text, DoublePair, Text> {
 
-        @Override
+        
             public void reduce(Text key, Iterable<DoublePair> values,
                     Context context) throws IOException, InterruptedException {
                 double aw = 0.0;
                 double sw = 0.0; 
                 for (DoublePair value : values){
-                    aw += DoublePair.getDouble1();
-                    sw += DoublePair.getDouble2();
+                    aw += value.getDouble1();
+                    sw += value.getDouble2();
                 }
                 context.write(new DoublePair(aw, sw), key);
 
@@ -165,14 +170,14 @@ public class Proj1{
 
 
     public static class Reduce1 extends Reducer<DoublePair, Text, DoubleWritable, Text> {
-        @Override
+        
             public void reduce(Text key, Iterable<DoublePair> values,
                     Context context) throws IOException, InterruptedException {
                 double aw = 0.0;
                 double sw = 0.0; 
                 for (DoublePair value : values){
-                    aw += DoublePair.getDouble1();
-                    sw += DoublePair.getDouble2();
+                    aw += value.getDouble1();
+                    sw += value.getDouble2();
                 }
 
                 double coRate = 0.0;
@@ -213,7 +218,8 @@ public class Proj1{
                 int outCount = 0;
                 for (Text value : values){
                     if (outCount == N_TO_OUTPUT){
-                        break;
+                        System.out.println("GOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOAAAL");
+			break;
                     }
                     key.set(Math.abs(key.get())); //make positive agains
                     context.write(key, value);
