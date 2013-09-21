@@ -32,12 +32,14 @@ public class Proj1{
     /*
      * Inputs is a set of (docID, document contents) pairs.
      */
-    public static class Map1 extends Mapper<WritableComparable, Text, Text, Text> {
+    public static class Map1 extends Mapper<WritableComparable, Text, DoublePair, Text> {
         /** Regex pattern to find words (alphanumeric + _). */
         final static Pattern WORD_PATTERN = Pattern.compile("\\w+");
 
         private String targetGram = null;
         private int funcNum = 0;
+
+
 
         /*
          * Setup gets called exactly once for each mapper, before map() gets called the first time.
@@ -59,7 +61,58 @@ public class Proj1{
                 Matcher matcher = WORD_PATTERN.matcher(docContents.toString());
                 Func func = funcFromNum(funcNum);
 
-                // YOUR CODE HERE
+                ArrayList<String> allWords = new ArrayList<String>(); //array of all words                
+                ArrayList<Integer> targetWords = new ArrayList<Integer>(); //array of target word indices
+                ArrayList<Integer> wordDistances = new ArrayList<Integer>(); //array of each word's distance
+
+                int i = 0;
+                //Populate targetWords and allWords
+                while(matcher.find()){  
+                    String word = matcher.group().toLowerCase();
+                    if (word.equals(targetGram)){
+                        targetWords.add(i);
+                    }
+                    allWords.add(word);                   
+                    i++;
+                }
+
+                //Initialize wordDistances
+                for (int f=0; f<allWords.size(); f++){
+                    wordDistances.add(Double.POSITIVE_INFINITY);
+                }                
+
+                //Populate wordIndicies with each word's respective distance relative to target word indices
+                for (int j=0; j<targetWords.size(); j++){
+                    for(int k=0; k<allWords.size(); k++){
+                        int distance  = Math.abs(targetWords.get(j) - k);
+                        wordDisances.set(j, min(distance, wordDistances.get(j))); //FIX FOR ABSTRACTION
+                    }
+                }
+
+                //Emit word-DoublePair pairs, DoublePair(Aw, Sw)
+                for (int m=0; m<wordDistance.size(); m++){
+                    // String temp = allWords.get(m);
+                    // if (!temp.equals(targetGram)){
+
+                    // }
+                    Text word = new Text(allWords.get(m));
+                    context.write(new DoublePair(targetWords.size(), Func.f(wordDistances.get(m))), word);
+                }
+
+                //Split all words into fragments based on the midpoints between target words
+                // String allWords[] = allWords.toArray();
+                // int start = 0;
+                // int midpoint = 0;
+                // for(int j=0; j<=targetWords.size()-1; j++){
+                //     if (j == targetWords.size()-1){
+                //         fragment.add(allWords[start:]);
+                //     }
+                //     else{
+                //         midpoint = targetWords.get(j) + targetWords.get(j+1) / 2;
+                //         fragments.add(allWords[start:midpoint+1]);
+                //         start = midpoint;
+                //     }
+                // }
 
             }
 
@@ -94,24 +147,39 @@ public class Proj1{
     }
 
     /** Here's where you'll be implementing your combiner. It must be non-trivial for you to receive credit. */
-    public static class Combine1 extends Reducer<Text, Text, Text, Text> {
+    public static class Combine1 extends Reducer<DoublePair, Text, DoublePair, Text> {
 
         @Override
-            public void reduce(Text key, Iterable<Text> values,
+            public void reduce(Text key, Iterable<DoublePair> values,
                     Context context) throws IOException, InterruptedException {
-
-                 // YOUR CODE HERE
+                double aw = 0.0;
+                double sw = 0.0; 
+                for (DoublePair value : values){
+                    aw += DoublePair.getDouble1();
+                    sw += DoublePair.getDouble2();
+                }
+                context.write(new DoublePair(aw, sw), key);
 
             }
     }
 
 
-    public static class Reduce1 extends Reducer<Text, Text, DoubleWritable, Text> {
+    public static class Reduce1 extends Reducer<DoublePair, Text, DoubleWritable, Text> {
         @Override
-            public void reduce(Text key, Iterable<Text> values,
+            public void reduce(Text key, Iterable<DoublePair> values,
                     Context context) throws IOException, InterruptedException {
+                double aw = 0.0;
+                double sw = 0.0; 
+                for (DoublePair value : values){
+                    aw += DoublePair.getDouble1();
+                    sw += DoublePair.getDouble2();
+                }
 
-                // YOUR CODE HERE
+                double coRate = 0.0;
+                if (sw > 0){
+                    coRate += sw * Math.pow(Math.log(sw), 3) / aw * -1.0;
+                }
+                context.write(new DoubleWritable(coRate), key);
 
             }
     }
@@ -142,9 +210,15 @@ public class Proj1{
         @Override
             public void reduce(DoubleWritable key, Iterable<Text> values,
                     Context context) throws IOException, InterruptedException {
-
-                 // YOUR CODE HERE
-
+                int outCount = 0;
+                for (Text value : values){
+                    if (outCount == N_TO_OUTPUT){
+                        break;
+                    }
+                    key.set(Math.abs(key.get())); //make positive agains
+                    context.write(key, value);
+                    outCount++;
+                }
             }
     }
 
@@ -204,7 +278,7 @@ public class Proj1{
             firstJob.setJarByClass(Map1.class);
 
             /* You may need to change things here */
-            firstJob.setMapOutputKeyClass(Text.class);
+            firstJob.setMapOutputKeyClass(DoublePair.class);
             firstJob.setMapOutputValueClass(Text.class);
             firstJob.setOutputKeyClass(DoubleWritable.class);
             firstJob.setOutputValueClass(Text.class);
