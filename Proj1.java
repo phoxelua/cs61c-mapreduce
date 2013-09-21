@@ -94,7 +94,7 @@ public class Proj1{
 
                     }
                 }
-
+		  //Emit word-DoublePair pairs, either  DoublePair(Sw, Aw) or DoublePair(Cw, Aw)
                 for (int m=0; m<allWords.size(); m++){
                     if (!targetGram.equals(allWords.get(m))){
                         if (targetWords.size() == 0){
@@ -105,28 +105,6 @@ public class Proj1{
                         }    
                     }
                 }
-
-                //Emit word-DoublePair pairs, either  DoublePair(Sw, Aw) or DoublePair(Cw, Aw)
-           //      for (int m=0; m<allWords.size(); m++){
-           //          if (funcNum == 0){
-				       //  if (targetWords.size() == 0){
-					      //  context.write(new Text(allWords.get(m)), new DoublePair(func.f(Double.POSITIVE_INFINITY), 1.0)); //emit 0,1
-				       //  }
-				       //  else{
-	   				   //      context.write(new Text(allWords.get(m)), new DoublePair(func.f(targetWords.size()), 1.0)); //emit 1,1
-				       //  }
-           //          }
-        			// else {
-        			// 	if (targetWords.size() == 0){
-        			// 		context.write(new Text(allWords.get(m)), new DoublePair(func.f(Double.POSITIVE_INFINITY), 1.0)); //emit 0,1
-        			// 	}
-        			// 	else{
-        			// 		if (!targetGram.equals(allWords.get(m))){
-        			// 			context.write(new Text(allWords.get(m)), new DoublePair(func.f(wordDistances.get(m)), 1.0)); //emit f(d),1	
-        			// 		}
-        			// 	}
-        			// }
-           //      }
             }
 
         /** Returns the Func corresponding to FUNCNUM*/
@@ -191,7 +169,7 @@ public class Proj1{
 
                 double coRate = 0.0;
                 if (sw > 0){
-                    coRate = (sw * Math.pow(Math.log(sw), 3) / aw) * -1.0;
+                    coRate = (sw * Math.pow(Math.log(sw), 3) / aw) * -1.0; //mult -1 to for sort order
                 }
                 context.write(new DoubleWritable(coRate), key);
 
@@ -224,14 +202,13 @@ public class Proj1{
         @Override
             public void reduce(DoubleWritable key, Iterable<Text> values,
                     Context context) throws IOException, InterruptedException {
-                int outCount = 0;
                 for (Text value : values){
-                    if (outCount == N_TO_OUTPUT){
+                    if (n == N_TO_OUTPUT){
                         break;
                     }
                     key.set(Math.abs(key.get())); //make positive again
                     context.write(key, value);
-                    outCount++;
+                    n++;
                 }
             }
     }
