@@ -63,11 +63,10 @@ public class Proj1{
 
                 ArrayList<String> allWords = new ArrayList<String>(); //array of all words                
                 ArrayList<Integer> targetWords = new ArrayList<Integer>(); //array of target word indices
-                ArrayList<Double> wordDistances = new ArrayList<Double>(); //array of each word's distance
+                ArrayList<Double> wordDistances = new ArrayList<Double>(); //array of each word's distance from target
 
-                int i = 0;
-		
                 //Populate targetWords and allWords
+                int i = 0;
                 while(matcher.find()){  
                     String word = matcher.group().toLowerCase();
                     if (word.equals(targetGram)){
@@ -76,16 +75,13 @@ public class Proj1{
                     allWords.add(word);                   
                     i++;
                 }
-		System.out.println("TARGET SIZE: "); 
-		System.out.print(targetWords.size());
 
                 //Initialize wordDistances
                 for (int f=0; f<allWords.size(); f++){
                     wordDistances.add(Double.POSITIVE_INFINITY);
-                }                
+                }     
 
                 //Populate wordIndicies with each word's respective distance relative to target word indices
-	
                 for (int j=0; j<targetWords.size(); j++){
                     for(int k=0; k<allWords.size(); k++){
 				if (targetWords.size() != 0){
@@ -99,53 +95,38 @@ public class Proj1{
                     }
                 }
 
-                //Emit word-DoublePair pairs, either  DoublePair(Sw, Aw) or DoublePair(Cw, Aw)
                 for (int m=0; m<allWords.size(); m++){
-                    //Text word = new Text(allWords.get(m));
-			//System.out.print(allWords.get(m));
-			//System.out.print(" ");
-			//System.out.print(targetWords.size()); 
-			//System.out.print(" ");
-			//System.out.print(func.f(wordDistances.get(m)));
-			//System.out.println(" ");
-			if (funcNum == 0){
-				System.out.println("FUNCNUM IS ZEROOOOOO");
-				if (targetWords.size() == 0){
-					context.write(new Text(allWords.get(m)), new DoublePair(func.f(Double.POSITIVE_INFINITY), 1.0)); //emit 0,1
-				}
-				else{
-	   				context.write(new Text(allWords.get(m)), new DoublePair(func.f(targetWords.size()), 1.0)); //emit 1,1
-				}
-			}
-			else {
-				if (targetWords.size() == 0){
-					System.out.println("TARGET WORDS SIZE IS ZEERRROOOOOOOOO");
-					context.write(new Text(allWords.get(m)), new DoublePair(func.f(Double.POSITIVE_INFINITY), 1.0));
-				
-				}
-				else{
-					if (!targetGram.equals(allWords.get(m))){
-						context.write(new Text(allWords.get(m)), new DoublePair(func.f(wordDistances.get(m)), 1.0));	
-					}
-				}
-			}
+                    if (!targetGram.equals(allWords.get(m))){
+                        if (targetWords.size() == 0){
+                            context.write(new Text(allWords.get(m)), new DoublePair(func.f(Double.POSITIVE_INFINITY), 1.0)); //emit 0,1
+                        }
+                        else{
+                            context.write(new Text(allWords.get(m)), new DoublePair(func.f(wordDistances.get(m)), 1.0)); //emit f(d),1  
+                        }    
+                    }
                 }
 
-                //Split all words into fragments based on the midpoints between target words
-                // String allWords[] = allWords.toArray();
-                // int start = 0;
-                // int midpoint = 0;
-                // for(int j=0; j<=targetWords.size()-1; j++){
-                //     if (j == targetWords.size()-1){
-                //         fragment.add(allWords[start:]);
-                //     }
-                //     else{
-                //         midpoint = targetWords.get(j) + targetWords.get(j+1) / 2;
-                //         fragments.add(allWords[start:midpoint+1]);
-                //         start = midpoint;
-                //     }
-                // }
-
+                //Emit word-DoublePair pairs, either  DoublePair(Sw, Aw) or DoublePair(Cw, Aw)
+           //      for (int m=0; m<allWords.size(); m++){
+           //          if (funcNum == 0){
+				       //  if (targetWords.size() == 0){
+					      //  context.write(new Text(allWords.get(m)), new DoublePair(func.f(Double.POSITIVE_INFINITY), 1.0)); //emit 0,1
+				       //  }
+				       //  else{
+	   				   //      context.write(new Text(allWords.get(m)), new DoublePair(func.f(targetWords.size()), 1.0)); //emit 1,1
+				       //  }
+           //          }
+        			// else {
+        			// 	if (targetWords.size() == 0){
+        			// 		context.write(new Text(allWords.get(m)), new DoublePair(func.f(Double.POSITIVE_INFINITY), 1.0)); //emit 0,1
+        			// 	}
+        			// 	else{
+        			// 		if (!targetGram.equals(allWords.get(m))){
+        			// 			context.write(new Text(allWords.get(m)), new DoublePair(func.f(wordDistances.get(m)), 1.0)); //emit f(d),1	
+        			// 		}
+        			// 	}
+        			// }
+           //      }
             }
 
         /** Returns the Func corresponding to FUNCNUM*/
@@ -212,9 +193,6 @@ public class Proj1{
                 if (sw > 0){
                     coRate = (sw * Math.pow(Math.log(sw), 3) / aw) * -1.0;
                 }
-		  //System.out.println("REDUCWERRERERER 1");
-		  //System.out.println(coRate);
-		  //System.out.print(key);	
                 context.write(new DoubleWritable(coRate), key);
 
             }
@@ -249,10 +227,9 @@ public class Proj1{
                 int outCount = 0;
                 for (Text value : values){
                     if (outCount == N_TO_OUTPUT){
-                        System.out.println("GOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOAAAL");
-			break;
+                        break;
                     }
-                    key.set(Math.abs(key.get())); //make positive agains
+                    key.set(Math.abs(key.get())); //make positive again
                     context.write(key, value);
                     outCount++;
                 }
