@@ -1,0 +1,24 @@
+1. (freedom, 0, 2005, off) – 1168 sec – 80 mappers/32 reducers
+   (freedom, 0, 2005, on) – 270 sec – 80 mappers/32 reducers
+   (capital, 0, 2006, on) - 909 sec - 316 mappers/32 reducers
+
+   (capital, 0, 2006, on) – 526 sec – 316 mappers/32 reducers
+   (landmark, 1, 2006, on) – 500 sec – 316 mappers/32 reducers
+   (monument, 2, 2006 , on)  - 480 sec – 316 mappers/32 reducers
+
+
+2. (1168-270) / 270 * 100 = 3.3259259259 * 100 = 33.2 % faster with combiner
+
+3. Median rate 5 workers = 0.0196 GB/sec
+   Median rate 9 workers = 0.0356 GB/sec (others were 0.0338, 0.03713)
+
+4. (0.0356 - 0.0196) / 0.0196 * 100 = 81.81% speedup (which is weird and likely wrong). We increased the number of workers by 80% and we observed a 81% speedup so we suspect 
+that the speedup is linear. This indicates that Hadoop is very good at parallelzing my code. So the max possible speedup would be if hadoop used all of the possible nodes. 
+(this is only true if our code is fully parallelizable so I'm not actually sure what's going on).
+
+
+
+5. 2006 w/ 5 workers: ($.58 * 5 instances) / 17.8 GB = $ .1626 / GB
+   2006 w/ 9 workers: ($.58 * 9 instances) / 17.8 GB = $.2928 / GB
+
+6. ($ .58 * 2 * 14) = $16.24
