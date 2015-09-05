@@ -21,13 +21,7 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 
-/*
- * This is the skeleton for CS61c project 1, Fall 2013.
- *
- * Reminder:  DO NOT SHARE CODE OR ALLOW ANOTHER STUDENT TO READ YOURS.
- * EVEN FOR DEBUGGING. THIS MEANS YOU.
- *
- */
+
 public class Proj1{
 
     /*
